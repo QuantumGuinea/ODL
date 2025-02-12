@@ -1,11 +1,17 @@
+const config = require("./config.json");
+
 const LIST_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
 const DETAIL_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/detailPetTour";
-const SERVICE_KEY = ""; //encoding key
+const SERVICE_KEY = "API_KEY";
+//encoding key
 
 // 📌 목록 조회 (contentid 배열 가져오기)
 async function fetchContentIds() {
+  //console.log(window.selectedLatlng.lng);
+  //console.log(window.selectedLatlng.lat);
+
   const params = new URLSearchParams({
     serviceKey: decodeURIComponent(SERVICE_KEY),
     numOfRows: 10,
@@ -15,9 +21,9 @@ async function fetchContentIds() {
     arrange: "C",
     listYN: "Y",
     contentTypeId: 12,
-    mapX: 126.981611,
-    mapY: 37.568477,
-    radius: 2000,
+    mapX: window.selectedLatlng.lng,
+    mapY: window.selectedLatlng.lat,
+    radius: 4000,
     _type: "json",
   });
 
@@ -88,4 +94,7 @@ async function fetchAllDetails() {
   console.log("📌 최종 문자열:\n", detailsString);
 }
 
-fetchAllDetails();
+// fetchAllDetails();
+document
+  .getElementById("fetchButton")
+  .addEventListener("click", fetchAllDetails);

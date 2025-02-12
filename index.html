@@ -3,9 +3,16 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>LLM팀 화이팅~</title>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={API_KEY}"></script>
   </head>
   <body>
+    <button id="fetchButton">API 호출</button>
+    <div id="map" style="width: 100%; height: 350px"></div>
+    <p><em>지도를 클릭해주세요!</em></p>
+    <div id="clickLatlng"></div>
+
     <script src="app.js"></script>
+    <script src="map.js"></script>
   </body>
 </html>
