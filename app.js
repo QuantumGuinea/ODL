@@ -1,5 +1,3 @@
-const config = require("./config.json");
-
 const LIST_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
 const DETAIL_API_URL =
