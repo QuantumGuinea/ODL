@@ -34,7 +34,7 @@ async function fetchContentIds() {
 
     // contentid만 추출하여 배열로 반환
     console.log(data);
-    return data.response.body.items.item.map((item) => item.contentid);
+    return data;
   } catch (error) {
     console.error("Error fetching content IDs:", error);
     return [];
@@ -66,7 +66,11 @@ async function fetchDetail(contentId) {
 
 // 📌 모든 API 호출 실행
 async function fetchAllDetails() {
-  const contentIds = await fetchContentIds();
+  const data = await fetchContentIds();
+
+  const contentIds = data.response.body.items.item.map(
+    (item) => item.contentid
+  );
   console.log("📌 가져온 contentId 목록:", contentIds);
 
   if (contentIds.length === 0) {
@@ -107,12 +111,54 @@ async function fetchAllDetails() {
   let numbers = json.reply;
 
   // 화면에 보여주는 함수
-  displayInfo(numbers);
+  displayInfo(numbers, data);
 }
 
-function displayInfo(numbers) {
-  const elements = numbers.map((num) => `<div>숙소 ${num}번</div>`).join("");
-  document.getElementById("result").innerHTML = elements;
+function displayInfo(numbers, data) {
+  const resultDiv = document.getElementById("result");
+
+  // data.response.body.items.item 배열에서 각 숙소의 정보 출력
+  for (const [index, num] of numbers.entries()) {
+    const item = data.response.body.items.item[index]; // 번호에 맞는 숙소 정보
+
+    const div = document.createElement("div");
+    div.id = `숙소-${index}`; // 인덱스를 기반으로 id 설정
+
+    // 숙소 이름
+    const title = document.createElement("h3");
+    title.textContent = item.title;
+    div.appendChild(title);
+
+    // 숙소 주소
+    const address = document.createElement("p");
+    address.textContent = `주소: ${item.addr1} ${item.addr2}`;
+    div.appendChild(address);
+
+    // 숙소 이미지 (없으면 대체 이미지 설정)
+    const image = document.createElement("img");
+    if (item.firstimage) {
+      image.src = item.firstimage;
+    } else {
+      image.src = "default-image.jpg"; // 기본 이미지 경로
+    }
+    image.alt = item.title;
+    image.style.width = "100%"; // 이미지 크기 조절
+    div.appendChild(image);
+
+    // 전화번호
+    const tel = document.createElement("p");
+    tel.textContent = `전화번호: ${item.tel}`;
+    div.appendChild(tel);
+
+    // 숙소 링크 (필요시 추가)
+    const link = document.createElement("a");
+    link.href = `http://tour.visitkorea.or.kr/${item.contentid}`;
+    link.target = "_blank";
+    link.textContent = "상세보기";
+    div.appendChild(link);
+
+    resultDiv.appendChild(div);
+  }
 }
 
 document

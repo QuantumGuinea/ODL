@@ -52,7 +52,7 @@ async function makeReply(text) {
   });
 
   const json = await response.data;
-  console.log("json.candidates[0].content.parts[0].text");
+  // console.log("json.candidates[0].content.parts[0].text");
   return json.candidates[0].content.parts[0].text;
 }
 
