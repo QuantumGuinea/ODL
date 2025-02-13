@@ -1,8 +1,10 @@
+import { SERVICE_KEY } from "./config.js";
+
 const LIST_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
 const DETAIL_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/detailPetTour";
-const SERVICE_KEY = "API_KEY";
+
 //encoding key
 
 // 📌 목록 조회 (contentid 배열 가져오기)
@@ -12,16 +14,16 @@ async function fetchContentIds() {
 
   const params = new URLSearchParams({
     serviceKey: decodeURIComponent(SERVICE_KEY),
-    numOfRows: 10,
+    numOfRows: 20,
     pageNo: 1,
     MobileOS: "ETC",
     MobileApp: "AppTest",
     arrange: "C",
     listYN: "Y",
-    contentTypeId: 12,
+    contentTypeId: 32,
     mapX: window.selectedLatlng.lng,
     mapY: window.selectedLatlng.lat,
-    radius: 4000,
+    radius: 10000,
     _type: "json",
   });
 
@@ -82,17 +84,37 @@ async function fetchAllDetails() {
       if (!detail || !Array.isArray(detail) || detail.length === 0) return null;
       const item = detail[0]; // 첫 번째 요소 가져오기
 
-      return `${index + 1}번 필수사항: ${item.acmpyNeedMtr}, 가능 여부: ${
-        item.acmpyPsblCpam
-      }, 기타 정보: ${item.etcAcmpyInfo}`;
-    })
+      return `${index}번 사고 위험: ${item.relaAcdntRiskMtr}, 동반 여부: ${item.acmpyTypeCd}, 관련 시설: ${item.relaPosesFclty}, 관련 제품 목록: ${item.relaFrnshPrdlst}, 추가 동반 정보: ${item.etcAcmpyInfo}, 구매 관련 제품 목록: ${item.relaPurcPrdlst}, 동반 가능한 조건: ${item.acmpyPsblCpam}, 대여 관련 제품 목록: ${item.relaRntlPrdlst}, 동반에 필요한 물품: ${item.acmpyNeedMtr}`;
+    }) //.replace(/[-\s]+/g, " ").trim()
     .filter((item) => item !== null) // null 값 제거
     .join("\n"); // 줄바꿈으로 연결
 
-  console.log("📌 최종 문자열:\n", detailsString);
+  console.log("📌 숙소 정보:\n", detailsString);
+
+  // gemini에게 물어봅시다..
+  const url = "http://localhost:3000/gemini";
+  const response = await fetch(url, {
+    method: "POST",
+    body: JSON.stringify({
+      text: detailsString,
+    }),
+    // Content-Type 꼭!
+    headers: {
+      "Content-Type": "Application/json",
+    },
+  });
+  const json = await response.json();
+  let numbers = json.reply;
+
+  // 화면에 보여주는 함수
+  displayInfo(numbers);
 }
 
-// fetchAllDetails();
+function displayInfo(numbers) {
+  const elements = numbers.map((num) => `<div>숙소 ${num}번</div>`).join("");
+  document.getElementById("result").innerHTML = elements;
+}
+
 document
   .getElementById("fetchButton")
   .addEventListener("click", fetchAllDetails);
