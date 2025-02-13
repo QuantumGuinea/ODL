@@ -3,16 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LLM팀 화이팅~</title>
-    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey={API_KEY}"></script>
+    <title>ODL팀 화이팅</title>
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=865dae18d063c5a6964dc558dec6e8a1&libraries=services"></script>
   </head>
   <body>
+    <input type="text" id="keywordInput" placeholder="검색어 입력" />
+    <button id="searchButton">검색</button>
     <button id="fetchButton">API 호출</button>
     <div id="map" style="width: 100%; height: 350px"></div>
     <p><em>지도를 클릭해주세요!</em></p>
     <div id="clickLatlng"></div>
-
-    <script src="app.js"></script>
+    <div id="result"></div>
+    <script type="module" src="app.js"></script>
     <script src="map.js"></script>
   </body>
 </html>
