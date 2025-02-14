@@ -75,6 +75,11 @@ async function fetchAllDetails() {
   console.log(tourValue + "\n");
 
   // 장소 기본 정보
+  if (!window.selectedLatlng?.lng || !window.selectedLatlng?.lat) {
+    // 하나라도 falsy한 값일 경우
+    alert("지도에 마커를 표시해 주세요!");
+    return;
+  }
   const data = await fetchBaseList(tourValue);
 
   // 만약에 data가 없다면 종료
@@ -136,7 +141,7 @@ async function fetchAllDetails() {
   console.log("📌 숙소 정보, 펫 정보:\n", prompt);
 
   // gemini에게 물어봅시다..
-  const url = "http://localhost:3000/gemini";
+  const url = `http://localhost:3000/gemini?type=${tourValue}`;
   const response = await fetch(url, {
     method: "POST",
     body: JSON.stringify({
@@ -158,7 +163,7 @@ function displayInfo(numbers, data) {
   const resultDiv = document.getElementById("result");
 
   // 조건에 부합되는 관광/숙소가 없다면
-  if (numbers.length == 0) {
+  if (numbers.length === 0) {
     console.log("반려 동물 정보에 맞는 관광/숙소가 없음", numbers);
     const div = document.createElement("div");
 
@@ -175,7 +180,7 @@ function displayInfo(numbers, data) {
 
   // data.response.body.items.item 배열에서 각 숙소의 정보 출력
   for (const [index, num] of numbers.entries()) {
-    const item = data.response.body.items.item[index]; // 번호에 맞는 숙소 정보
+    const item = data.response.body.items.item[num]; // 번호에 맞는 숙소 정보
 
     const div = document.createElement("div");
     div.id = `숙소-${index}`; // 인덱스를 기반으로 id 설정
