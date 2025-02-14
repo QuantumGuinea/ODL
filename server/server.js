@@ -65,7 +65,7 @@ app.post("/gemini", async (req, res) => {
   const { text } = req.body;
   try {
     const reply = await makeReply(text);
-
+    console.log(reply);
     const numbers = reply
       .split("RESULT:::")[1]
       .trim()
