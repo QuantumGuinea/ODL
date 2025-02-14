@@ -139,10 +139,10 @@ function displayInfo(numbers, data) {
     if (item.firstimage) {
       image.src = item.firstimage;
     } else {
-      image.src = "default-image.jpg"; // 기본 이미지 경로
+      image.src = "https://placehold.co/437x291.png"; // 기본 이미지 경로
     }
     image.alt = item.title;
-    image.style.width = "100%"; // 이미지 크기 조절
+    image.style.width = "50%"; // 이미지 크기 조절
     div.appendChild(image);
 
     // 전화번호
