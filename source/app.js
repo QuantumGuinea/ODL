@@ -1,23 +1,13 @@
 import { SERVICE_KEY } from "./config.js";
+import { TOUR_TYPE } from "./constant.js";
 
 const LIST_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
 const DETAIL_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/detailPetTour";
 
-const TOUR_TYPE = {
-  12: "관광지",
-  14: "문화시설",
-  15: "축제공연행사",
-  25: "여행코스",
-  28: "레포츠",
-  32: "숙박",
-  38: "쇼핑",
-  39: "음식점",
-};
-
 // 📌 장소 목록 조회
-async function fetchBaseList() {
+async function fetchBaseList(tourValue) {
   //console.log(window.selectedLatlng.lng);
   //console.log(window.selectedLatlng.lat);
 
@@ -29,7 +19,7 @@ async function fetchBaseList() {
     MobileApp: "AppTest",
     arrange: "C",
     listYN: "Y",
-    contentTypeId: 32,
+    contentTypeId: tourValue,
     mapX: window.selectedLatlng.lng,
     mapY: window.selectedLatlng.lat,
     radius: 10000,
@@ -73,10 +63,37 @@ async function fetchDetail(contentId) {
   }
 }
 
+function getSelectedTourValue() {
+  const selectedTour = document.querySelector('input[name="tour"]:checked');
+  return selectedTour ? selectedTour.value : null;
+}
+
 // 📌 모든 API 호출 실행
 async function fetchAllDetails() {
+  // 관광 카테고리
+  const tourValue = getSelectedTourValue();
+  console.log(tourValue + "\n");
+
   // 장소 기본 정보
-  const data = await fetchBaseList();
+  const data = await fetchBaseList(tourValue);
+
+  // 만약에 data가 없다면 종료
+  if (data.response.body.totalCount === 0) {
+    console.log("주위의 정보 없음", data);
+
+    const resultDiv = document.getElementById("result");
+    const div = document.createElement("div");
+
+    // 조회된 관광/숙소가 없음
+    const message = document.createElement("p");
+    message.textContent = "조회된 관광/숙소가 없음";
+    div.appendChild(message);
+
+    // resultDiv 안에 추가
+    resultDiv.appendChild(div);
+
+    return;
+  }
 
   // contentid 배열 가져오기
   const contentIds = data.response.body.items.item.map(
@@ -99,8 +116,15 @@ async function fetchAllDetails() {
       if (!detail || !Array.isArray(detail) || detail.length === 0) return null;
       const item = detail[0]; // 첫 번째 요소 가져오기
 
-      return `${index}번 사고 위험: ${item.relaAcdntRiskMtr}, 동반 여부: ${item.acmpyTypeCd}, 관련 시설: ${item.relaPosesFclty}, 관련 제품 목록: ${item.relaFrnshPrdlst}, 추가 동반 정보: ${item.etcAcmpyInfo}, 구매 관련 제품 목록: ${item.relaPurcPrdlst}, 동반 가능한 조건: ${item.acmpyPsblCpam}, 대여 관련 제품 목록: ${item.relaRntlPrdlst}, 동반에 필요한 물품: ${item.acmpyNeedMtr}`;
-    }) //.replace(/[-\s]+/g, " ").trim()
+      // 장소의 속성 정리
+      Object.keys(item).forEach((key) => {
+        if (typeof item[key] === "string") {
+          item[key] = item[key].replace(/[-\s]+/g, " ").trim();
+        }
+      });
+
+      return `${index}번 사고 예방 및 응급 조치 관련 정보: ${item.relaAcdntRiskMtr}, 반려동물 동반 가능 구역 정보: ${item.acmpyTypeCd}, 관련 시설: ${item.relaPosesFclty}, 제공되는 반려동물 관련 용품: ${item.relaFrnshPrdlst}, 기타 동반 정보: ${item.etcAcmpyInfo}, 구매 가능한 제품 목록: ${item.relaPurcPrdlst}, 동반 가능한 반려견 기준: ${item.acmpyPsblCpam}, 대여 관련 제품 목록: ${item.relaRntlPrdlst}, 필수 동반 조건: ${item.acmpyNeedMtr}`;
+    })
     .filter((item) => item !== null) // null 값 제거
     .join("\n"); // 줄바꿈으로 연결
 
@@ -132,6 +156,22 @@ async function fetchAllDetails() {
 
 function displayInfo(numbers, data) {
   const resultDiv = document.getElementById("result");
+
+  // 조건에 부합되는 관광/숙소가 없다면
+  if (numbers.length == 0) {
+    console.log("반려 동물 정보에 맞는 관광/숙소가 없음", numbers);
+    const div = document.createElement("div");
+
+    // 반려 동물 정보에 맞는 관광/숙소가 없음
+    const message = document.createElement("p");
+    message.textContent = "반려 동물 정보에 맞는 관광/숙소가 없음";
+    div.appendChild(message);
+
+    // resultDiv 안에 추가
+    resultDiv.appendChild(div);
+
+    return;
+  }
 
   // data.response.body.items.item 배열에서 각 숙소의 정보 출력
   for (const [index, num] of numbers.entries()) {
