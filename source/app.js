@@ -5,10 +5,19 @@ const LIST_API_URL =
 const DETAIL_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/detailPetTour";
 
-//encoding key
+const TOUR_TYPE = {
+  12: "관광지",
+  14: "문화시설",
+  15: "축제공연행사",
+  25: "여행코스",
+  28: "레포츠",
+  32: "숙박",
+  38: "쇼핑",
+  39: "음식점",
+};
 
-// 📌 목록 조회 (contentid 배열 가져오기)
-async function fetchContentIds() {
+// 📌 장소 목록 조회
+async function fetchBaseList() {
   //console.log(window.selectedLatlng.lng);
   //console.log(window.selectedLatlng.lat);
 
@@ -66,8 +75,10 @@ async function fetchDetail(contentId) {
 
 // 📌 모든 API 호출 실행
 async function fetchAllDetails() {
-  const data = await fetchContentIds();
+  // 장소 기본 정보
+  const data = await fetchBaseList();
 
+  // contentid 배열 가져오기
   const contentIds = data.response.body.items.item.map(
     (item) => item.contentid
   );
@@ -93,14 +104,19 @@ async function fetchAllDetails() {
     .filter((item) => item !== null) // null 값 제거
     .join("\n"); // 줄바꿈으로 연결
 
-  console.log("📌 숙소 정보:\n", detailsString);
+  // pet 정보
+  const petInfo = document.getElementById("petInfo").value.trim();
+  // prompt
+  const prompt =
+    "숙소 정보:\n" + detailsString + "\n반려동물 정보:\n" + petInfo;
+  console.log("📌 숙소 정보, 펫 정보:\n", prompt);
 
   // gemini에게 물어봅시다..
   const url = "http://localhost:3000/gemini";
   const response = await fetch(url, {
     method: "POST",
     body: JSON.stringify({
-      text: detailsString,
+      text: prompt,
     }),
     // Content-Type 꼭!
     headers: {
