@@ -97,11 +97,14 @@ app.post("/gemini", async (req, res) => {
   try {
     const reply = await makeReply(text, type);
 
-    const infoList = reply.split("```")[1].split("json")[1];
-    console.log(infoList);
-    if (JSON.parse(infoList)[0] === -1) {
+    let infoList = reply;
+
+    if (reply.slice(0, 4) === "[-1]") {
       console.log("가능한 관광/숙소가 존재하지 않음");
+    } else {
+      infoList = reply.split("```")[1].split("json")[1];
     }
+    console.log(infoList);
 
     res.json({ reply: infoList });
   } catch (error) {
