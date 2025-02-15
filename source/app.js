@@ -145,8 +145,14 @@ async function fetchAllDetails() {
     .join("\n"); // 줄바꿈으로 연결
 
   // pet 정보
-  const petInfo = document.getElementById("petInfo").value.trim();
-  // prompt
+  // 각 input 필드의 값을 가져오기
+  const name = document.getElementById("field1").value.trim();
+  const species = document.getElementById("field2").value.trim();
+  const size = document.getElementById("field3").value.trim();
+  const isPredator = document.getElementById("field4").value.trim();
+  const isPublicFriendly = document.getElementById("field5").value.trim();
+  // 값을 하나의 문자열로 연결
+  const petInfo = `이름: ${name}, 종: ${species}, 크기: ${size}, 맹수 여부: ${isPredator}, 공공장소 동행 가능 여부: ${isPublicFriendly}`;
   const prompt =
     "숙소 정보:\n" + detailsString + "\n반려동물 정보:\n" + petInfo;
   console.log("📌 숙소 정보, 펫 정보:\n", prompt);
