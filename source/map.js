@@ -34,6 +34,7 @@ function moveMap(keyword) {
 
       if (map) {
         map.setCenter(newCenter); // 기존 map의 중심만 변경
+        map.setLevel(4); // 지도 레벨을 5로 변경
       } else {
         loadKaKaoMap(data[0].y, data[0].x);
       }
