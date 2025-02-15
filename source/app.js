@@ -12,7 +12,7 @@ async function fetchBaseList(tourValue) {
   //console.log(window.selectedLatlng.lat);
 
   const params = new URLSearchParams({
-    serviceKey: decodeURIComponent(SERVICE_KEY),
+    serviceKey: SERVICE_KEY,
     numOfRows: 20,
     pageNo: 1,
     MobileOS: "ETC",
@@ -28,6 +28,9 @@ async function fetchBaseList(tourValue) {
 
   try {
     const response = await fetch(`${LIST_API_URL}?${params}`);
+    // const data = await response.text(); // JSON 대신 text로 받아보기
+    // console.log("📌 응답 본문:", data);
+
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     const data = await response.json();
 
@@ -43,7 +46,7 @@ async function fetchBaseList(tourValue) {
 // 📌 개별 API 호출 (각 contentid에 대해 호출)
 async function fetchDetail(contentId) {
   const params = new URLSearchParams({
-    serviceKey: decodeURIComponent(SERVICE_KEY),
+    serviceKey: SERVICE_KEY,
     numOfRows: 10,
     pageNo: 1,
     MobileOS: "ETC",
@@ -54,6 +57,10 @@ async function fetchDetail(contentId) {
 
   try {
     const response = await fetch(`${DETAIL_API_URL}?${params}`);
+
+    // const data = await response.text(); // JSON 대신 text로 받아보기
+    // console.log("📌 응답 본문:", data);
+
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     const data = await response.json();
     return data.response.body.items.item; // 상세 정보 반환
@@ -128,7 +135,11 @@ async function fetchAllDetails() {
         }
       });
 
-      return `${index}번 사고 예방 및 응급 조치 관련 정보: ${item.relaAcdntRiskMtr}, 반려동물 동반 가능 구역 정보: ${item.acmpyTypeCd}, 관련 시설: ${item.relaPosesFclty}, 제공되는 반려동물 관련 용품: ${item.relaFrnshPrdlst}, 기타 동반 정보: ${item.etcAcmpyInfo}, 구매 가능한 제품 목록: ${item.relaPurcPrdlst}, 동반 가능한 반려견 기준: ${item.acmpyPsblCpam}, 대여 관련 제품 목록: ${item.relaRntlPrdlst}, 필수 동반 조건: ${item.acmpyNeedMtr}`;
+      const info = data.response.body.items.item[index];
+      const title = info.title;
+      const addr = `${info.addr1} ${info.addr2}`;
+
+      return `${index}번 장소 이름: ${title} 상세 주소: ${addr} 사고 예방 및 응급 조치 관련 정보: ${item.relaAcdntRiskMtr}, 반려동물 동반 가능 구역 정보: ${item.acmpyTypeCd}, 관련 시설: ${item.relaPosesFclty}, 제공되는 반려동물 관련 용품: ${item.relaFrnshPrdlst}, 기타 동반 정보: ${item.etcAcmpyInfo}, 구매 가능한 제품 목록: ${item.relaPurcPrdlst}, 동반 가능한 반려견 기준: ${item.acmpyPsblCpam}, 대여 관련 제품 목록: ${item.relaRntlPrdlst}, 필수 동반 조건: ${item.acmpyNeedMtr}`;
     })
     .filter((item) => item !== null) // null 값 제거
     .join("\n"); // 줄바꿈으로 연결
@@ -153,18 +164,17 @@ async function fetchAllDetails() {
     },
   });
   const json = await response.json();
-  let numbers = json.reply;
+  let infoList = JSON.parse(json.reply);
 
   // 화면에 보여주는 함수
-  displayInfo(numbers, data);
+  displayInfo(infoList, data, tourValue);
 }
 
-function displayInfo(numbers, data) {
+function displayInfo(infoList, data, tourValue) {
   const resultDiv = document.getElementById("result");
 
   // 조건에 부합되는 관광/숙소가 없다면
-  if (numbers.length === 0) {
-    console.log("반려 동물 정보에 맞는 관광/숙소가 없음", numbers);
+  if (infoList[0] === -1 || infoList.length === 0) {
     const div = document.createElement("div");
 
     // 반려 동물 정보에 맞는 관광/숙소가 없음
@@ -179,11 +189,11 @@ function displayInfo(numbers, data) {
   }
 
   // data.response.body.items.item 배열에서 각 숙소의 정보 출력
-  for (const [index, num] of numbers.entries()) {
-    const item = data.response.body.items.item[num]; // 번호에 맞는 숙소 정보
+  for (const [index, placeInfo] of infoList.entries()) {
+    const item = data.response.body.items.item[placeInfo.NUMBER]; // 번호에 맞는 숙소 정보
 
     const div = document.createElement("div");
-    div.id = `숙소-${index}`; // 인덱스를 기반으로 id 설정
+    div.id = `${tourValue}-${index}`; // 인덱스를 기반으로 id 설정
 
     // 숙소 이름
     const title = document.createElement("h3");
@@ -206,17 +216,38 @@ function displayInfo(numbers, data) {
     image.style.width = "50%"; // 이미지 크기 조절
     div.appendChild(image);
 
+    // 주요특징
+    const info = document.createElement("p");
+    info.textContent = `주요 특징: ${
+      placeInfo.INFO && placeInfo.INFO.trim() ? placeInfo.INFO : "정보 없음"
+    }`;
+
+    div.appendChild(info);
+
+    // 운영시간
+    const time = document.createElement("p");
+    time.textContent = `운영 시간: ${
+      placeInfo.TIME && placeInfo.TIME.trim() ? placeInfo.TIME : "정보 없음"
+    }`;
+
+    div.appendChild(time);
+
     // 전화번호
     const tel = document.createElement("p");
-    tel.textContent = `전화번호: ${item.tel}`;
+    tel.textContent = `전화번호: ${
+      item.tel && item.tel.trim() ? item.tel : "정보 없음"
+    }`;
+
     div.appendChild(tel);
 
+    /*
     // 숙소 링크 (필요시 추가)
     const link = document.createElement("a");
     link.href = `http://tour.visitkorea.or.kr/${item.contentid}`;
     link.target = "_blank";
     link.textContent = "상세보기";
     div.appendChild(link);
+    */
 
     resultDiv.appendChild(div);
   }
