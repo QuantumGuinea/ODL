@@ -1,4 +1,4 @@
-export const TOUR_TYPE = {
+const TOUR_TYPE = {
   12: "관광지",
   14: "문화시설",
   15: "축제공연행사",
@@ -8,3 +8,5 @@ export const TOUR_TYPE = {
   38: "쇼핑",
   39: "음식점",
 };
+
+module.exports = { TOUR_TYPE };

@@ -4,7 +4,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const app = express();
-const { TOUR_TYPE } = require("../source/constant");
+const { TOUR_TYPE } = require("./constant.js");
 
 // 미들웨어 설정
 app.use(express.json());

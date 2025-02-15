@@ -1,5 +1,4 @@
 import { SERVICE_KEY } from "./config.js";
-import { TOUR_TYPE } from "./constant.js";
 
 const LIST_API_URL =
   "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
@@ -158,7 +157,7 @@ async function fetchAllDetails() {
   console.log("📌 숙소 정보, 펫 정보:\n", prompt);
 
   // gemini에게 물어봅시다..
-  const url = `http://localhost:3000/gemini?type=${tourValue}`;
+  const url = `https://miniature-purple-scissor.glitch.me/gemini?type=${tourValue}`;
   const response = await fetch(url, {
     method: "POST",
     body: JSON.stringify({
