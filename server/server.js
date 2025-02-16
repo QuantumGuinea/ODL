@@ -113,6 +113,97 @@ app.post("/gemini", async (req, res) => {
   }
 });
 
+app.get("/baselist", async (req, res) => {
+  const LIST_API_URL =
+    "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
+  const { tourValue, lat, lng } = req.query;
+
+  if (!process.env.SERVICE_KEY) {
+    return res
+      .status(500)
+      .json({ error: "SERVICE_KEY is not defined in environment variables" });
+  }
+
+  const params = new URLSearchParams({
+    serviceKey: process.env.SERVICE_KEY,
+    numOfRows: 20,
+    pageNo: 1,
+    MobileOS: "ETC",
+    MobileApp: "AppTest",
+    arrange: "C",
+    listYN: "Y",
+    contentTypeId: tourValue,
+    mapX: lng,
+    mapY: lat,
+    radius: 10000,
+    _type: "json",
+  });
+
+  try {
+    const response = await axios.get(`${LIST_API_URL}?${params}`);
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    res.json(response.data);
+  } catch (error) {
+    console.error("Tour API Error:", error);
+    res.status(500).json({
+      error: "Error fetching tour data",
+      details: error.message,
+    });
+  }
+});
+
+app.get("/tour/detail", async (req, res) => {
+  const DETAIL_API_URL =
+    "https://apis.data.go.kr/B551011/KorPetTourService/detailPetTour";
+  const { contentId } = req.query;
+
+  if (!contentId) {
+    return res.status(400).json({ error: "contentId is required" });
+  }
+
+  if (!process.env.SERVICE_KEY) {
+    return res
+      .status(500)
+      .json({ error: "SERVICE_KEY is not defined in environment variables" });
+  }
+
+  const params = new URLSearchParams({
+    serviceKey: process.env.SERVICE_KEY,
+    numOfRows: 10,
+    pageNo: 1,
+    MobileOS: "ETC",
+    MobileApp: "AppTest",
+    contentId: contentId,
+    _type: "json",
+  });
+
+  try {
+    const response = await axios.get(`${DETAIL_API_URL}?${params}`);
+
+    if (response.status !== 200) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    // console.log(response);
+    // console.log(contentId);
+    // JSON 구조 해체(클라이언트에서 기대하는 형식으로 응답)
+    if (response.data?.response?.body?.items?.item) {
+      res.json(response.data.response.body.items.item);
+    } else {
+      res.json(null);
+    }
+  } catch (error) {
+    console.error(`Error fetching details for contentId ${contentId}:`, error);
+    res.status(500).json({
+      error: `Error fetching details for contentId ${contentId}`,
+      details: error.message,
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on port ${PORT}`);
