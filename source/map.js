@@ -1,5 +1,7 @@
 var map;
 var marker;
+var geocoder;
+var infowindow;
 
 function loadKaKaoMap(x = 37.566842224638414, y = 126.97865225753738) {
   var mapContainer = document.getElementById("map"), // 지도를 표시할 div
@@ -9,6 +11,10 @@ function loadKaKaoMap(x = 37.566842224638414, y = 126.97865225753738) {
     };
 
   map = new kakao.maps.Map(mapContainer, mapOption); // 지도를 생성합니다
+
+  // 주소-좌표 변환 객체를 생성합니다
+  geocoder = new kakao.maps.services.Geocoder();
+  infowindow = new kakao.maps.InfoWindow({ zindex: 1 }); // 클릭한 위치에 대한 주소를 표시할 인포윈도
 
   // 지도를 클릭한 위치에 표출할 마커입니다
   marker = new kakao.maps.Marker({
@@ -44,26 +50,49 @@ function moveMap(keyword) {
   });
 }
 
+function searchDetailAddrFromCoords(coords, callback) {
+  // 좌표로 법정동 상세 주소 정보를 요청합니다
+  geocoder.coord2Address(coords.getLng(), coords.getLat(), callback);
+}
+
 function clickEvent(mouseEvent) {
-  // 지도에 마커를 표시합니다
-  marker.setMap(map);
-  // 클릭한 위도, 경도 정보를 가져옵니다
-  var latlng = mouseEvent.latLng;
+  searchDetailAddrFromCoords(mouseEvent.latLng, function (result, status) {
+    if (status === kakao.maps.services.Status.OK) {
+      var detailAddr = !!result[0].road_address
+        ? "<div>도로명주소 : " + result[0].road_address.address_name + "</div>"
+        : "";
+      detailAddr +=
+        "<div>지번 주소 : " + result[0].address.address_name + "</div>";
 
-  // 마커 위치를 클릭한 위치로 옮깁니다
-  marker.setPosition(latlng);
+      var content =
+        '<div class="bAddr">' +
+        '<span class="infoWindow">법정동 주소정보</span>' +
+        detailAddr +
+        "</div>";
 
-  // 클릭한 위치의 위도와 경도 정보를 객체로 저장하여 전역 객체인 window에 저장
-  window.selectedLatlng = {
-    lat: latlng.getLat(), // 위도 값 저장
-    lng: latlng.getLng(), // 경도 값 저장
-  };
+      // 마커를 클릭한 위치에 표시합니다
+      var latlng = mouseEvent.latLng;
+      marker.setPosition(latlng);
+      marker.setMap(map);
 
-  var message = "클릭한 위치의 위도는 " + latlng.getLat() + " 이고, ";
-  message += "경도는 " + latlng.getLng() + " 입니다";
+      // 인포윈도우에 클릭한 위치에 대한 법정동 상세 주소정보를 표시
+      infowindow.setContent(content);
+      infowindow.open(map, marker);
 
-  var resultDiv = document.getElementById("clickLatlng");
-  resultDiv.innerHTML = message;
+      // 클릭한 위치의 위도와 경도 정보를 객체로 저장하여 전역 객체인 window에 저장
+      window.selectedLatlng = {
+        lat: latlng.getLat(), // 위도 값 저장
+        lng: latlng.getLng(), // 경도 값 저장
+      };
+
+      var message = "클릭한 위치의 위도는 " + latlng.getLat() + " 이고, ";
+      message += "경도는 " + latlng.getLng() + " 입니다\n";
+      message += detailAddr;
+
+      var resultDiv = document.getElementById("clickLatlng");
+      resultDiv.innerHTML = message;
+    }
+  });
 }
 
 document.getElementById("searchButton").addEventListener("click", function () {

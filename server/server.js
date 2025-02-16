@@ -146,7 +146,19 @@ app.get("/baselist", async (req, res) => {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    res.json(response.data);
+    const data = response.data.response.body.items.item.sort((a, b) => {
+      if (a.firstimage && !b.firstimage) {
+        return -1; // a가 b보다 위로 오도록
+      }
+      if (!a.firstimage && b.firstimage) {
+        return 1; // b가 a보다 위로 오도록
+      }
+      return 0; // firstimage의 존재 여부가 동일하면 순서를 변경하지 않음
+    });
+
+    console.log(data);
+
+    res.json(data);
   } catch (error) {
     console.error("Tour API Error:", error);
     res.status(500).json({
