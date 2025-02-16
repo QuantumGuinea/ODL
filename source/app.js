@@ -1,32 +1,13 @@
-import { SERVICE_KEY } from "./config.js";
-
-const LIST_API_URL =
-  "https://apis.data.go.kr/B551011/KorPetTourService/locationBasedList";
-const DETAIL_API_URL =
-  "https://apis.data.go.kr/B551011/KorPetTourService/detailPetTour";
+// const baseUrl = "http://localhost:3000";
+const baseUrl = "https://miniature-purple-scissor.glitch.me";
 
 // 📌 장소 목록 조회
 async function fetchBaseList(tourValue) {
-  //console.log(window.selectedLatlng.lng);
-  //console.log(window.selectedLatlng.lat);
-
-  const params = new URLSearchParams({
-    serviceKey: SERVICE_KEY,
-    numOfRows: 20,
-    pageNo: 1,
-    MobileOS: "ETC",
-    MobileApp: "AppTest",
-    arrange: "C",
-    listYN: "Y",
-    contentTypeId: tourValue,
-    mapX: window.selectedLatlng.lng,
-    mapY: window.selectedLatlng.lat,
-    radius: 10000,
-    _type: "json",
-  });
-
   try {
-    const response = await fetch(`${LIST_API_URL}?${params}`);
+    const response = await fetch(
+      `${baseUrl}/baselist?tourValue=${tourValue}&lat=${window.selectedLatlng.lat}&lng=${window.selectedLatlng.lng}`
+    );
+
     // const data = await response.text(); // JSON 대신 text로 받아보기
     // console.log("📌 응답 본문:", data);
 
@@ -44,25 +25,17 @@ async function fetchBaseList(tourValue) {
 
 // 📌 개별 API 호출 (각 contentid에 대해 호출)
 async function fetchDetail(contentId) {
-  const params = new URLSearchParams({
-    serviceKey: SERVICE_KEY,
-    numOfRows: 10,
-    pageNo: 1,
-    MobileOS: "ETC",
-    MobileApp: "AppTest",
-    contentId: contentId,
-    _type: "json",
-  });
-
   try {
-    const response = await fetch(`${DETAIL_API_URL}?${params}`);
+    const response = await fetch(
+      `${baseUrl}/tour/detail?contentId=${contentId}`
+    );
 
     // const data = await response.text(); // JSON 대신 text로 받아보기
     // console.log("📌 응답 본문:", data);
 
     if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
     const data = await response.json();
-    return data.response.body.items.item; // 상세 정보 반환
+    return data; // 상세 정보 반환
   } catch (error) {
     console.error(`Error fetching details for contentId ${contentId}:`, error);
     return null;
