@@ -62,7 +62,7 @@ async function fetchAllDetails() {
   const data = await fetchBaseList(tourValue);
 
   // 만약에 data가 없다면 종료
-  if (data.response.body.totalCount === 0) {
+  if (data.length === 0) {
     console.log("주위의 정보 없음", data);
 
     const resultDiv = document.getElementById("result");
@@ -80,9 +80,8 @@ async function fetchAllDetails() {
   }
 
   // contentid 배열 가져오기
-  const contentIds = data.response.body.items.item.map(
-    (item) => item.contentid
-  );
+  const contentIds = data.map((item) => item.contentid);
+
   console.log("📌 가져온 contentId 목록:", contentIds);
 
   if (contentIds.length === 0) {
@@ -107,7 +106,7 @@ async function fetchAllDetails() {
         }
       });
 
-      const info = data.response.body.items.item[index];
+      const info = data[index];
       const title = info.title;
       const addr = `${info.addr1} ${info.addr2}`;
 
@@ -166,9 +165,9 @@ function displayInfo(infoList, data, tourValue) {
     return;
   }
 
-  // data.response.body.items.item 배열에서 각 숙소의 정보 출력
+  // data 배열에서 각 숙소의 정보 출력
   for (const [index, placeInfo] of infoList.entries()) {
-    const item = data.response.body.items.item[placeInfo.NUMBER]; // 번호에 맞는 숙소 정보
+    const item = data[placeInfo.NUMBER]; // 번호에 맞는 숙소 정보
 
     const div = document.createElement("div");
     div.id = `${tourValue}-${index}`; // 인덱스를 기반으로 id 설정
