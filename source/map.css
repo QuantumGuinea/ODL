@@ -1,0 +1,10 @@
+.infoWindow {
+  font-weight: bold;
+  display: block;
+}
+.bAddr {
+  padding: 5px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
